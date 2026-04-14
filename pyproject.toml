@@ -1,0 +1,328 @@
+[project]
+name = "content-localization"
+version = "2.0"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.12"
+dependencies = [
+    # gRPC
+    "grpcio==1.67.1",
+    "grpcio-tools==1.67.1",
+    "grpcio-health-checking==1.67.1",
+    "protobuf==5.29.6",
+
+    # ASR+TTS
+    "nvidia-riva-client==2.18.0",
+    "elevenlabs>=2.32.0",
+    "audioread>=3.0.1",
+    "pydub>=0.25.1",
+    "opencv-python-headless",
+
+    # others
+    "scikit-learn",
+    "scikit-image",
+    "scipy",
+    "soundfile>=0.12.1",
+    "matplotlib",
+    "flatbuffers",
+    "packaging",
+    "sympy",
+    "requests",
+    "numpy<2",
+    "typing_extensions",
+    "python-dotenv",
+    "ngcsdk>=4.8",
+    "yappi==1.7.3",
+
+    # transitive dep lower bounds to remediate NSpect CVEs
+    "urllib3>=2.6.3",
+    "cryptography>=46.0.6",
+    "pillow>=12.1.1",
+    "fonttools>=4.62.1",
+    "pygments>=2.20.0",
+    "tornado>=6.5.5",
+]
+[project.optional-dependencies]
+test = [
+    "pytest>=9.0.3",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.1",
+    "pytest-mock>=3.12.0",
+    "pytest-html>=3.2.0",
+    "psutil",
+]
+lint = [
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.8",
+    "mypy",
+    "pylint",
+]
+gpu = [
+    # "onnxruntime-gpu",
+    "pycuda", 
+    # "cupy-cuda12x",
+    "tensorrt-cu12>=10.9,<10.10",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "recommonmark",
+    "sphinxcontrib.mermaid",
+]
+triton = [
+    "starlette==0.49.1"
+]
+profiler = [
+    "pandas==2.3.3",
+    "snakeviz==2.2.2"
+]
+# --- uv dependencies
+
+# see uv settings: https://docs.astral.sh/uv/reference/settings/
+[tool.uv]
+managed = true # This is required for the project to be managed by uv.
+
+# uv honors netrc and keyrings for credentials
+# put this in your ~/.netrc
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
+
+# --- tests
+
+[tool.pytest.ini_options]
+# Test discovery and execution
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Test execution options
+addopts = """
+    --verbose
+    --strict-markers
+    --durations=0
+    --cov=src
+    --cov=client
+    --cov-report=term
+    --cov-report=term-missing
+    --cov-report=html:build/coverage
+    --cov-report=xml:build/coverage/coverage.xml
+    --no-cov-on-fail
+"""
+
+# Python path configuration - include virtual environment
+pythonpath = [
+    ".",
+    "./src",
+    "./client",
+    "./protos/generated",
+    ".venv/lib/python3.10/site-packages",
+]
+
+# Test markers
+markers = [
+    "unit: marks unit test, i.e. testing a single, well isolated functionality (deselect with '-m \"not unit\"')",
+    "integration: marks test checking the elements when integrated into subsystems (deselect with '-m \"not integration\"')",
+    "system: marks test working at the highest integration level (deselect with '-m \"not system\"')",
+    "acceptance: marks test checking whether the developed product/model passes the user defined acceptance criteria (deselect with '-m \"not acceptance\"')",
+    "docs: mark tests related to documentation (deselect with '-m \"not docs\"')",
+    "skipduringci: marks tests that are skipped ci as they are addressed by Jenkins jobs but should be run to test user setups",
+    "pleasefixme: marks tests that are broken and need fixing",
+]
+
+# Directories to ignore when discovering tests
+norecursedirs = [
+    "external",
+    "examples",
+    "docs",
+    "scripts",
+    "tools",
+    "tutorials",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    ".git",
+    "__pycache__",
+    "*.egg-info",
+    "volumes",
+    "protos/generated",
+]
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+target-version = "py312"
+extend-exclude = [
+    "build",
+    "dist",
+    "volumes",
+    "protos/generated",
+    "src/base_utils/ai4m_base_utils",
+    "*.egg-info",
+    "*.pyc",
+    "*.pyo",
+    "*.pyd",
+    "*.pyw",
+    "*.pyz",
+]
+select = [
+    # Core Flake8 rules (pycodestyle/pyflakes)
+    "E",
+    "F",
+    "W",
+    # Imports
+    "I",
+    # Quality/safety improvements
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "A",   # flake8-builtins
+    "N",   # pep8-naming
+    "ARG", # flake8-unused-arguments
+    "S",   # flake8-bandit
+    "ISC", # flake8-implicit-str-concat
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "E203",
+    "E402",
+]
+fixable = ["ALL"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.isort]
+force-single-line = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+preview = false
+
+[tool.mypy]
+disable_error_code = ["call-arg"]
+
+[tool.pyright]
+extraPaths = [
+    "src",
+    "client",
+    "protos/generated",
+]
+executionEnvironments = [
+    { root = ".", extraPaths = ["src", "client", "protos/generated"] },
+]
+
+[tool.pylint.main]
+init-hook = "import sys; sys.path.extend(['src', 'client', 'protos/generated'])"
+disable = ["C0413"]
+
+[tool.coverage.run]
+source = ["src", "client"]
+omit = [
+    "tests/*",
+    "setup.py",
+    "*/__init__.py",
+    "protos/generated/*",
+    "protos/generated/**/*",
+]
+data_file = "build/.coverage"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == '__main__':",
+    "pass",
+    "raise ImportError",
+]
+show_missing = true
+# fail_under = 80
+
+[tool.coverage.html]
+directory = "build/coverage"
+title = "Content Localization Coverage Report"
+
+# --- poetry for s2s & asd services
+# TODO: remove poetry from containers and use uv instead
+
+[tool.poetry]
+name = "content-localization"
+version = "2.0"
+description = "Content Localization Service"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+grpcio = "1.67.1"
+grpcio-tools = "1.67.1"
+grpcio-health-checking = "1.67.1"
+protobuf = "*"
+nvidia-riva-client = "*"
+elevenlabs = ">=2.32.0"
+audioread = ">=3.0.1"
+pydub = ">=0.25.1"
+opencv-python-headless = "*"
+scikit-learn = "*"
+scikit-image = "*"
+scipy = "*"
+soundfile = ">=0.12.1"
+matplotlib = "*"
+flatbuffers = "*"
+packaging = "*"
+sympy = "*"
+requests = ">=2.31.0"
+numpy = "<2"
+typing_extensions = "*"
+python-dotenv = "*"
+ngcsdk = ">=4.8"
+yappi = "==1.7.3"
+urllib3 = ">=2.6.3"
+cryptography = ">=46.0.6"
+pillow = ">=12.1.1"
+fonttools = ">=4.62.1"
+pygments = ">=2.20.0"
+tornado = ">=6.5.5"
+
+[tool.poetry.group.gpu.dependencies]
+pycuda = "*"
+tensorrt-cu12 = ">=10.9,<10.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=9.0.3"
+pytest-cov = ">=4.1.0"
+pytest-asyncio = ">=0.21.1"
+pytest-mock = ">=3.12.0"
+pytest-html = ">=3.2.0"
+psutil = "*"
+
+[tool.poetry.group.lint.dependencies]
+pre-commit = ">=4.2.0"
+ruff = "*"
+mypy = "*"
+pylint = "*"
+
+[dependency-groups]
+dev = [
+    "psutil>=7.0.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.1.0",
+    "pytest-cov>=6.2.1",
+    "pytest-html>=4.1.1",
+    "pytest-mock>=3.14.1",
+]

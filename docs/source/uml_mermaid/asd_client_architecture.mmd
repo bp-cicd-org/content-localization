@@ -1,0 +1,22 @@
+flowchart LR
+    asdApp[ASDApp] --> asdArgs[ASDArgsFactory]
+    asdApp --> asdConfig[ASDConfig]
+    asdApp --> videoSource[VideoSourceSimulator]
+    asdApp --> audioSource[AudioSourceSimulator]
+    asdApp --> diarizationLoader[DiarizationLoader]
+    asdApp --> roiWriter[ROIOutputWriter]
+    asdApp --> asdStub[SpeakerDetectionStub]
+
+    diarizationLoader --> flatFormat[FlatJSON]
+    diarizationLoader --> rivaFormat[RivaJSON]
+    diarizationLoader --> elevenLabsFormat[ElevenLabsJSON]
+
+    asdStub --> asdService[SpeakerDetectionService]
+    asdStub --> asdReq[SpeakerDetectionRequest]
+    asdStub --> asdResp[SpeakerDetectionResponse]
+
+    asdService --> faceDetect[FaceDetection]
+    asdService --> speakerDetect[SpeakerDetection]
+    asdService --> roiGen[ROIGeneration]
+    asdResp --> speakerInfo[SpeakerInfo]
+    speakerInfo --> bbox[BoundingBox]

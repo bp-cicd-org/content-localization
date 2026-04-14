@@ -1,0 +1,74 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+syntax = "proto3";
+
+package nvidia.ai4m.controller.v1;
+
+import "nvidia/ai4m/activespeakerdetection/v1/activespeakerdetection.proto";
+import "nvidia/ai4m/lipsync/v1/lipsync.proto";
+import "nvidia/ai4m/s2s/v1/s2s.proto";
+import "google/protobuf/empty.proto";
+
+// Content Localization service definition
+service ContentLocalizationController {
+  // Bidirectional streaming RPC for content localization
+  rpc StreamContentLocalization(stream ContentLocalizationRequest) returns (stream ContentLocalizationResponse) {}
+}
+
+// TODO: Need to add configuration RPCs and messages for setting up speaker portrait etc.
+
+// Controller-level configuration sent once at the start of the request stream
+message ContentLocalizationConfig {
+  // When true, skip S2S and use translated_audio_data for LipSync input
+  bool bypass_s2s = 1;
+  // When true, skip ASD — LipSync uses internal face detection
+  bool bypass_asd = 2;
+}
+
+// Content Localization message containing audio data and metadata
+message ContentLocalizationRequest {
+  // Raw audio data
+  optional bytes audio_data = 1;
+
+  // Raw video data
+  optional bytes video_file_data = 2;
+
+  // Request ID for tracking
+  optional string request_id = 3;
+
+  // S2S config
+  optional nvidia.ai4m.s2s.v1.SpeechToSpeechConfig s2s_config = 4;
+
+  // Diarization info for active speaker detection
+  optional nvidia.ai4m.activespeakerdetection.v1.AudioDiarizationInfo diarization_info = 5;
+
+  // ASD config for active speaker detection service
+  optional nvidia.ai4m.activespeakerdetection.v1.ActiveSpeakerDetectionConfig asd_config = 6;
+
+  // LipSync config for lip sync service
+  optional nvidia.ai4m.lipsync.v1.LipsyncConfig lipsync_config = 7;
+
+  // Background audio data bytes for LipSync background audio mixing
+  optional bytes background_audio_data = 8;
+
+  // Pre-translated audio that bypasses S2S (per-request no-S2S mode)
+  optional bytes translated_audio_data = 9;
+
+  // Controller-level config (bypass_s2s, etc.)
+  optional ContentLocalizationConfig controller_config = 10;
+}
+
+// Content Localization message containing processed video data
+message ContentLocalizationResponse {
+  // Processed video data from LipSync service
+  optional bytes video_file_data = 1;
+
+  // Request ID for tracking
+  optional string request_id = 2;
+
+  // Empty message used to maintain connection
+  google.protobuf.Empty keepalive = 3;
+}
