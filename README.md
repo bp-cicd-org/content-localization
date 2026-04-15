@@ -23,13 +23,16 @@ The diagram below shows the controller-centric end-to-end architecture used to o
 ---
 
 ## License:
-The content localization blueprint software is governed by the [Apache License 2.0](LICENSE.md), and enables use of separate open source and proprietary software, models and services governed by their respective licenses, including those below.
-- Active Speaker Detection NIM
-- Lip Sync NIM
-- RIVA ASR NIM
-- RIVA Magpie-TTS-Zeroshot
-- Eleven Labs API service
-- Camb.ai service
+
+GOVERNING TERMS: The blueprint software is governed by the [Apache License 2.0](https://github.com/NVIDIA-AI-Blueprints/content-localization/LICENSE.md), and enables use of separate open source and proprietary software, models and services governed by their respective licenses, including those below.
+  - [Active Speaker Detection NIM](https://catalog.ngc.nvidia.com/orgs/nim/teams/nvidia/containers/active-speaker-detection)
+  - [LipSync NIM](https://catalog.ngc.nvidia.com/orgs/nim/teams/nvidia/containers/lipsync)
+  - [RIVA ASR NIM](https://catalog.ngc.nvidia.com/orgs/nim/teams/nvidia/containers/riva-asr?version=1.3.0)
+  - [RIVA Magpie-TTS-Zeroshot](https://build.nvidia.com/nvidia/magpie-tts-zeroshot)
+  - [Eleven Labs API service](https://elevenlabs.io/dubbing-studio)
+  - [Camb.ai service](https://www.camb.ai/features/translation)
+
+Sample Assets: Use of the assets is governed by the [NVIDIA Sample Data License](https://github.com/NVIDIA-AI-Blueprints/content-localization/blob/main/licenses/NVIDIA%20Maxine%20Sample%20Data%20License%20%282025.10.22%29.pdf).
 
 Link to relevant licenses:
 
