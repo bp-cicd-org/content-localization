@@ -58,14 +58,9 @@ def add_s2s_config_args_to_parser(
         "--target-language",
         type=str,
         default="de",
-        help="Target language for speech-to-speech translation (default: de)",
-    )
-    parser.add_argument(
-        "--voice-name",
-        type=str,
-        default=None,
-        help="Voice name for TTS (optional, service will use default if not provided). "
-        "For zero-shot TTS, the service automatically extracts voice from input audio.",
+        help="Target language for speech-to-speech translation (default: de). "
+        "Note: when using the RIVA Magpie Multilingual TTS model, "
+        "only en-US is supported as an output language.",
     )
     add_elevenlabs_config_args_to_parser(parser)
     add_camb_config_args_to_parser(parser)
@@ -80,7 +75,7 @@ def s2s_config_from_args(args: argparse.Namespace) -> SpeechToSpeechConfig:
 
     Args:
         args (argparse.Namespace): Parsed argument namespace with
-            ``source_language``, ``target_language``, ``voice_name``,
+            ``source_language``, ``target_language``,
             and ``elevenlabs_*`` attributes.
 
     Returns:
@@ -90,7 +85,6 @@ def s2s_config_from_args(args: argparse.Namespace) -> SpeechToSpeechConfig:
         >>> args = argparse.Namespace(
         ...     source_language="en",
         ...     target_language="de",
-        ...     voice_name=None,
         ...     elevenlabs_num_speakers=0,
         ...     elevenlabs_drop_background_audio=False,
         ...     elevenlabs_use_profanity_filter=False,
@@ -108,8 +102,11 @@ def s2s_config_from_args(args: argparse.Namespace) -> SpeechToSpeechConfig:
         config.source_language = args.source_language
     if args.target_language:
         config.target_language = args.target_language
-    if args.voice_name:
-        config.voice_name = args.voice_name
+    # voice_name is not exposed as a CLI argument; populate from the
+    # namespace only when set programmatically by a caller.
+    voice_name = getattr(args, "voice_name", None)
+    if voice_name:
+        config.voice_name = voice_name
     apply_elevenlabs_args_to_config(args, config)
     apply_camb_args_to_config(args, config)
     return config

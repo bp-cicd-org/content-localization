@@ -100,7 +100,6 @@ class DirectPipelineConfig:
             ...     bypass_asd=False,
             ...     source_language="en",
             ...     target_language="de",
-            ...     voice_name=None,
             ...     elevenlabs_num_speakers=0,
             ...     elevenlabs_drop_background_audio=False,
             ...     elevenlabs_use_profanity_filter=False,

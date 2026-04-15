@@ -130,9 +130,6 @@ S2S Arguments
    * - ``--target-language``
      - ``es``
      - Target language code for speech-to-speech translation.
-   * - ``--voice-name``
-     - ``None``
-     - Voice name for TTS (optional; service uses default if unset).
    * - ``--elevenlabs-num-speakers``
      - ``0``
      - Number of speakers for ElevenLabs dubbing. 0 = auto-detect.

@@ -114,7 +114,10 @@ Processing and Timeouts
    * - ``S2S_SERVICE``
      - str
      - ``EL_DUBBING``
-     - S2S backend (``EL_DUBBING`` or ``RIVA_TRANSACTIONAL``).
+     - S2S backend (``EL_DUBBING``, ``RIVA_TRANSACTIONAL``, or
+       ``RIVA_STREAMING``). When using ``RIVA_STREAMING`` with the
+       Magpie Multilingual TTS model, only ``en-US`` is supported as
+       an output language.
    * - ``CONTROLLER_CONFIG_POLL_TIMEOUT``
      - float
      - ``5.0``
@@ -221,6 +224,12 @@ Language
      - str
      - ``es``
      - Target language code.
+
+.. note::
+
+   When using the RIVA Magpie Multilingual TTS model
+   (``magpie-tts-multilingual``), only ``en-US`` is supported as an
+   output (target) language.
 
 Timeouts
 ~~~~~~~~

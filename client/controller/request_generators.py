@@ -149,8 +149,7 @@ def create_controller_request_generator(
         print(
             f"Controller | sending S2S config: "
             f"source_language={s2s_config.source_language}, "
-            f"target_language={s2s_config.target_language}, "
-            f"voice_name={s2s_config.voice_name or 'None'}"
+            f"target_language={s2s_config.target_language}"
         )
         yield ContentLocalizationRequest(s2s_config=s2s_config)
     else:

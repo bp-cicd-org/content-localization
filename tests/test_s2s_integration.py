@@ -411,10 +411,12 @@ class TestS2SServiceComparison(unittest.TestCase):
         self.assertTrue(transactional_service.validate_source_language("de-DE"))
         self.assertFalse(streaming_service.validate_source_language("de-DE"))
 
-        # Streaming supports bidirectional translation
-        self.assertTrue(streaming_service.validate_target_language("fr-FR"))
-        # Transactional only supports en-US as target
+        # Both streaming (Magpie Multilingual) and transactional (Magpie ZeroShot)
+        # only support en-US as target language.
+        self.assertFalse(streaming_service.validate_target_language("fr-FR"))
         self.assertFalse(transactional_service.validate_target_language("fr-FR"))
+        self.assertTrue(streaming_service.validate_target_language("en-US"))
+        self.assertTrue(transactional_service.validate_target_language("en-US"))
 
     @patch("s2s_service.riva_utils.s2s.GRPCRIVATTSClient")
     @patch("s2s_service.riva_utils.s2s.GRPCRIVAStreamingASTClient")

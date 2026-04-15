@@ -120,7 +120,6 @@ class ControllerConfig:
             ...     chunk_size_video_bytes=1048576,
             ...     source_language="en",
             ...     target_language="de",
-            ...     voice_name=None,
             ...     elevenlabs_num_speakers=0,
             ...     elevenlabs_drop_background_audio=False,
             ...     elevenlabs_use_profanity_filter=False,

@@ -56,3 +56,9 @@ Primary Modules
 - ``s2s_service.entrypoint``: Argument parsing and server bootstrap logic for
   starting the S2S container.
 
+.. note::
+
+   When using the RIVA Magpie Multilingual TTS model
+   (``magpie-tts-multilingual``), only ``en-US`` is supported as an
+   output (target) language.
+

@@ -781,8 +781,8 @@ class S2SRIVAAbstractService(S2SService):
         parser.add_argument(
             "--default-voice-name",
             type=str,
-            default="Magpie-Multilingual.ES-US.Isabela",
-            help="Voice name (default: Magpie-Multilingual.ES-US.Isabela)",
+            default="Magpie-Multilingual.EN-US.Sofia",
+            help="Voice name (default: Magpie-Multilingual.EN-US.Sofia)",
         )
         return parser
 
@@ -835,6 +835,8 @@ class S2SRIVAStreamingService(S2SRIVAAbstractService):
     """RIVA Streaming Speech-to-Speech service.
 
     This class currently serves only RIVA Magpie Multilingual NIM for TTS.
+    The Magpie Multilingual TTS model only supports en-US as an output
+    (target) language.
     """
 
     supported_source_languages = [
@@ -842,10 +844,9 @@ class S2SRIVAStreamingService(S2SRIVAAbstractService):
         "es-US",
         "fr-FR",
     ]
+    # Magpie Multilingual TTS only supports en-US as output language.
     supported_target_languages = [
         "en-US",
-        "es-US",
-        "fr-FR",
     ]
     use_auto_zero_shot = False
     supported_voice_names = {

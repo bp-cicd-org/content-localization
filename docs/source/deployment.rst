@@ -233,6 +233,12 @@ Deploy the zero-shot TTS service:
 
 This downloads the Magpie Zero-Shot model to ``volumes/models/tts-zeroshot/`` and requires ``TTS_API_KEY`` environment variable.
 
+.. note::
+
+   When using the RIVA Magpie Multilingual TTS model
+   (``magpie-tts-multilingual``) instead of the zero-shot model,
+   only ``en-US`` is supported as an output (target) language.
+
 Deploy LipSync Service
 ~~~~~~~~~~~~~~~~~~~~~~
 

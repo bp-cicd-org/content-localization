@@ -127,8 +127,8 @@ Controller Client Arguments
 - ``--chunk-size-video-bytes``: Video chunk size in bytes (default: 1 MB)
 - ``--output-mp4``: Output MP4 video file path (default: outputs/controller_output.mp4)
 - ``--source-language``: Source language code (default: en)
-- ``--target-language``: Target language code (default: de)
-- ``--voice-name``: Voice name for TTS (optional)
+- ``--target-language``: Target language code (default: de). When using the RIVA
+  Magpie Multilingual TTS model, only ``en-US`` is supported as an output language.
 - ``--diarization-file``: Path to JSON diarization file for speaker segments (optional)
 - ``--diarization-format``: Format of the diarization file (choices: flat, riva, elevenlabs, elevenlabs-studio, camb; default: elevenlabs)
 - ``--bypass-asd``: Bypass ASD NIM (Active Speaker Detection); LipSync uses internal face detection
@@ -177,8 +177,8 @@ S2S Client Arguments
 - ``--chunk-size-audio-secs``: Audio chunk duration in seconds (default: 1.0)
 - ``--latency-plot``: Path for latency analysis plot (default: outputs/latency.png)
 - ``--source-language``: Source language code (default: en)
-- ``--target-language``: Target language code (default: de)
-- ``--voice-name``: Voice name for TTS (optional, auto-extracted for zero-shot TTS)
+- ``--target-language``: Target language code (default: de). When using the RIVA
+  Magpie Multilingual TTS model, only ``en-US`` is supported as an output language.
 - ``--elevenlabs-num-speakers``: Number of speakers for ElevenLabs dubbing, 0 = auto-detect (default: 0)
 - ``--elevenlabs-drop-background-audio``: Drop background audio from the final dub (flag)
 - ``--elevenlabs-use-profanity-filter``: Censor profanities in transcripts (flag, beta)

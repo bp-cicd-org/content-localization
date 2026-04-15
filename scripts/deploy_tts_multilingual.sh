@@ -6,6 +6,8 @@
 
 set -e
 
+# NOTE: The Magpie Multilingual TTS model only supports en-US as an output
+# (target) language.
 export CONTAINER_ID=magpie-tts-multilingual
 export NIM_TAGS_SELECTOR="name=${CONTAINER_ID}, batch_size=8, model_type=rmir"
 export NIM_TAG=latest

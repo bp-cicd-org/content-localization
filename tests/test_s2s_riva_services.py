@@ -84,15 +84,15 @@ class TestS2SRIVAStreamingService(unittest.TestCase):
             tts_server=tts_server,
             sample_rate_hz=16000,
             default_source_language="en-US",
-            default_target_language="es-US",
-            default_voice_name="Magpie-Multilingual.ES-US.Isabela",
+            default_target_language="en-US",
+            default_voice_name="Magpie-Multilingual.EN-US.Sofia",
         )
 
         # Verify initialization
         self.assertEqual(service.sample_rate_hz, 16000)
         self.assertEqual(service.default_source_language, "en-US")
-        self.assertEqual(service.default_target_language, "es-US")
-        self.assertEqual(service.default_voice_name, "Magpie-Multilingual.ES-US.Isabela")
+        self.assertEqual(service.default_target_language, "en-US")
+        self.assertEqual(service.default_voice_name, "Magpie-Multilingual.EN-US.Sofia")
         self.assertFalse(service.use_auto_zero_shot)
 
     @patch("s2s_service.riva_utils.s2s.GRPCRIVATTSClient")
@@ -114,10 +114,10 @@ class TestS2SRIVAStreamingService(unittest.TestCase):
         # Test invalid source language
         self.assertFalse(service.validate_source_language("de-DE"))
 
-        # Test valid target languages
+        # Magpie Multilingual TTS only supports en-US as output language.
         self.assertTrue(service.validate_target_language("en-US"))
-        self.assertTrue(service.validate_target_language("es-US"))
-        self.assertTrue(service.validate_target_language("fr-FR"))
+        self.assertFalse(service.validate_target_language("es-US"))
+        self.assertFalse(service.validate_target_language("fr-FR"))
 
         # Test invalid target language
         self.assertFalse(service.validate_target_language("ja-JP"))

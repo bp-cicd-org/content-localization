@@ -38,20 +38,18 @@ if (S2S_SERVICE === "RIVA_TRANSACTIONAL") {
   DEFAULT_SOURCE_LANGUAGE = "es-US";
   DEFAULT_TARGET_LANGUAGE = "en-US";
 } else if (S2S_SERVICE === "RIVA_STREAMING") {
+  // NOTE: The RIVA Magpie Multilingual TTS model only supports en-US as an
+  // output (target) language.
   SUPPORTED_SOURCE_LANGUAGES = [
     { code: "en-US", label: "English (en-US)" },
     { code: "fr-FR", label: "French (fr-FR)" },
     { code: "es-US", label: "Spanish (es-US)" },
   ];
 
-  SUPPORTED_TARGET_LANGUAGES = [
-    { code: "en-US", label: "English (en-US)" },
-    { code: "fr-FR", label: "French (fr-FR)" },
-    { code: "es-US", label: "Spanish (es-US)" },
-  ];
+  SUPPORTED_TARGET_LANGUAGES = [{ code: "en-US", label: "English (en-US)" }];
 
-  DEFAULT_SOURCE_LANGUAGE = "en-US";
-  DEFAULT_TARGET_LANGUAGE = "es-US";
+  DEFAULT_SOURCE_LANGUAGE = "es-US";
+  DEFAULT_TARGET_LANGUAGE = "en-US";
 } else if (S2S_SERVICE === "EL_DUBBING") {
   SUPPORTED_SOURCE_LANGUAGES = [
     { code: "auto", label: "Auto detect" },

@@ -90,7 +90,6 @@ class S2SConfig:
             ...     chunk_size_audio_secs=1.0,
             ...     source_language="en",
             ...     target_language="de",
-            ...     voice_name=None,
             ...     elevenlabs_num_speakers=0,
             ...     elevenlabs_drop_background_audio=False,
             ...     elevenlabs_use_profanity_filter=False,
@@ -112,7 +111,7 @@ class S2SConfig:
             chunk_size_audio_secs=args.chunk_size_audio_secs,
             source_language=args.source_language,
             target_language=args.target_language,
-            voice_name=args.voice_name,
+            voice_name=getattr(args, "voice_name", None),
             elevenlabs_num_speakers=getattr(args, "elevenlabs_num_speakers", 0),
             elevenlabs_drop_background_audio=getattr(
                 args, "elevenlabs_drop_background_audio", False
