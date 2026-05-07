@@ -1,0 +1,148 @@
+# Deploys the Content Localization controller-el stack via Docker Compose,
+# waits for it to become healthy, then runs the QA test suite from the
+# shared QA image.
+#
+# Required repository secrets:
+#   NGC_API_KEY            NVIDIA NGC API key with pull access to
+#                          nvcr.io/nim/nvidia/lipsync (Maxine entitlement) and
+#                          nvcr.io/nim/nvidia/active-speaker-detection.
+#                          Mapped into LipSync / ASD containers.
+#   ELEVENLABS_API_KEY     ElevenLabs key for the S2S service in the
+#                          controller-third-party-s2s compose profile.
+#   CAMB_API_KEY           CAMB.AI key required by CAMB-* test cases.
+#   TEST_DOCKER_PULL_KEY   NVIDIA API key with pull access to
+#                          nvcr.io/rw983xdqtcdp/auto_test_team/blueprint-github-test-image.
+#                          If unset, the test step is skipped.
+#
+# Optional SMTP secrets (mail step skipped if any are missing):
+#   SMTP_USERNAME, SMTP_PASSWORD, SMTP_MAIL_TO, SMTP_MAIL_FROM
+
+name: Blueprint QA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  content-localization:
+    name: Content Localization E2E
+    runs-on: arc-runner-set-oke-org-poc-2-gpu
+    timeout-minutes: 480
+    env:
+      NGC_API_KEY: ${{ secrets.NGC_API_KEY }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      CAMB_API_KEY: ${{ secrets.CAMB_API_KEY }}
+      QA_TEST_IMAGE: nvcr.io/rw983xdqtcdp/auto_test_team/blueprint-github-test-image:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure .env for compose
+        run: |
+          set -euo pipefail
+          : "${NGC_API_KEY:?NGC_API_KEY secret missing}"
+          : "${ELEVENLABS_API_KEY:?ELEVENLABS_API_KEY secret missing}"
+          cat > .env <<EOF
+          LIPSYNC_API_KEY=${NGC_API_KEY}
+          ASD_API_KEY=${NGC_API_KEY}
+          ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+          EOF
+
+      - name: Deploy controller-el stack
+        run: |
+          set -euo pipefail
+          echo "${NGC_API_KEY}" | docker login nvcr.io -u '$oauthtoken' --password-stdin
+          docker compose --profile controller-third-party-s2s \
+            --env-file configs/elevenlabs.env --env-file .env \
+            up -d --build
+
+          echo "Waiting for controller gRPC to be reachable on :50056 (up to 30 min)..."
+          timeout 1800 bash -c 'until nc -z localhost 50056 2>/dev/null; do sleep 10; done' \
+            || { docker compose --profile controller-third-party-s2s ps; exit 1; }
+          echo "Stack is up."
+
+      - name: Run Content Localization automation
+        env:
+          TEST_DOCKER_PULL_KEY: ${{ secrets.TEST_DOCKER_PULL_KEY }}
+        run: |
+          set -euo pipefail
+          [ -n "${TEST_DOCKER_PULL_KEY:-}" ] || exit 0
+          echo "${TEST_DOCKER_PULL_KEY}" | docker login nvcr.io -u '$oauthtoken' --password-stdin
+          docker pull "${QA_TEST_IMAGE}"
+
+          # Mount the checked-out CL repo into the test container so EL-CTRL
+          # cases can resolve <cl_repo>/.venv/bin/python and the bundled
+          # sample assets. The venv is bootstrapped inside the container so
+          # the python binary path stays valid for subprocess calls.
+          docker run --rm --net=host \
+            -v "$(pwd):/cl_repo" \
+            -e CAMB_API_KEY \
+            -e ELEVENLABS_API_KEY \
+            "${QA_TEST_IMAGE}" \
+            bash -euxo pipefail -c '
+              cd /cl_repo
+
+              python3 -m venv .venv
+              .venv/bin/pip install --quiet -e .
+              .venv/bin/pip install --quiet elevenlabs pytest pytest-asyncio
+              [ -f protos/health.proto ] || curl -fsSL \
+                https://raw.githubusercontent.com/grpc/grpc/master/src/proto/grpc/health/v1/health.proto \
+                -o protos/health.proto
+              bash ./protos/generate_protos.sh
+
+              pytest -m content_localization \
+                --content-localization-repo=/cl_repo \
+                --disable-warnings -v --timeout=1800 \
+                --html=/cl_repo/content-localization-test.html --self-contained-html
+            '
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-localization-test
+          path: content-localization-test.html
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose --profile controller-third-party-s2s down -v --rmi all 2>/dev/null || true
+          docker rmi "${QA_TEST_IMAGE}" 2>/dev/null || true
+          docker image prune -f
+
+      - name: Detect SMTP
+        id: smtp
+        if: always()
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_MAIL_TO: ${{ secrets.SMTP_MAIL_TO }}
+          SMTP_MAIL_FROM: ${{ secrets.SMTP_MAIL_FROM }}
+        run: |
+          [ -n "${SMTP_USERNAME:-}${SMTP_PASSWORD:-}${SMTP_MAIL_TO:-}${SMTP_MAIL_FROM:-}" ] \
+            && [ -n "${SMTP_USERNAME:-}" ] && [ -n "${SMTP_PASSWORD:-}" ] \
+            && [ -n "${SMTP_MAIL_TO:-}" ] && [ -n "${SMTP_MAIL_FROM:-}" ] \
+            && echo "enabled=true" >> "$GITHUB_OUTPUT" \
+            || echo "enabled=false" >> "$GITHUB_OUTPUT"
+
+      - name: Send mail
+        if: always() && steps.smtp.outputs.enabled == 'true'
+        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
+        continue-on-error: true
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "QA Test Workflow Result for ${{ github.repository }}"
+          to: ${{ secrets.SMTP_MAIL_TO }}
+          from: ${{ secrets.SMTP_MAIL_FROM }}
+          html_body: |
+            <p>Workflow for <strong>${{ github.repository }}</strong> finished: <strong>${{ job.status }}</strong></p>
+            <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View run</a></p>
