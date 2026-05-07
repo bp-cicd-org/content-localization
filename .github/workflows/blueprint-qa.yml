@@ -52,6 +52,18 @@ jobs:
           ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
           EOF
 
+      - name: GPU / driver diagnostics
+        run: |
+          set +e
+          echo "===== nvidia-smi (host) ====="
+          nvidia-smi || true
+          echo "===== nvidia-container-cli ====="
+          nvidia-container-cli --version 2>&1 || true
+          nvidia-container-cli info 2>&1 | head -50 || true
+          echo "===== nvidia-smi inside container ====="
+          docker run --rm --runtime=nvidia --gpus all \
+            nvcr.io/nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi || true
+
       - name: Deploy controller-el stack
         run: |
           set -euo pipefail
