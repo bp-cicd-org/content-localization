@@ -61,8 +61,15 @@ jobs:
             up -d --build
 
           echo "Waiting for controller gRPC to be reachable on :50056 (up to 30 min)..."
-          timeout 1800 bash -c 'until nc -z localhost 50056 2>/dev/null; do sleep 10; done' \
-            || { docker compose --profile controller-third-party-s2s ps; exit 1; }
+          if ! timeout 1800 bash -c 'until nc -z localhost 50056 2>/dev/null; do sleep 10; done'; then
+            echo "::error::Controller did not come up; dumping diagnostics"
+            docker compose --profile controller-third-party-s2s ps
+            for c in lipsync asd s2s controller; do
+              echo "===== docker logs $c ====="
+              docker logs --tail 200 "$c" 2>&1 || true
+            done
+            exit 1
+          fi
           echo "Stack is up."
 
       - name: Run Content Localization automation
@@ -108,6 +115,14 @@ jobs:
           path: content-localization-test.html
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Dump container logs (on failure)
+        if: failure()
+        run: |
+          for c in lipsync asd s2s controller; do
+            echo "===== docker logs $c ====="
+            docker logs --tail 500 "$c" 2>&1 || true
+          done
 
       - name: Cleanup
         if: always()
